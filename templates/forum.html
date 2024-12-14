@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fórum</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mt-5">Fórum</h1>
+
+        <!-- Exibe mensagens de flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul>
+                    {% for category, message in messages %}
+                        <li class="alert alert-{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Opção para criar um novo grupo -->
+        <div class="text-center mb-3">
+            <a href="{{ url_for('create_group') }}" class="btn btn-success">Criar Novo Grupo</a>
+        </div>
+
+        <!-- Lista os grupos -->
+        <div class="list-group">
+            {% for group in discussion_groups %}
+                <a href="{{ url_for('group', group_id=group.id) }}" class="list-group-item list-group-item-action">
+                    {{ group.name }}
+                </a>
+            {% else %}
+                <p class="text-center">Nenhum grupo de discussão disponível.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Botão para voltar à página inicial -->
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('home') }}" class="btn btn-secondary">Voltar para a Página Inicial</a>
+        </div>
+    </div>
+</body>
+</html>

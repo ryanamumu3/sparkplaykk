@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Spark Play</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        input[type="text"], .form-container textarea, .form-container input[type="number"], .form-container select {
+            width: 50%;
+            padding: 10px;
+            border-radius: 8px;
+            border: 2px solid #ecf0f1;
+            font-size: 16px;
+            margin-right: 10px;
+            outline: none;
+            -webkit-box-shadow: 17px 13px 12px -4px rgba(0,0,0,0.60);
+            -moz-box-shadow: 17px 13px 12px -4px rgba(0,0,0,0.60);
+            box-shadow: 17px 13px 12px -4px rgba(0,0,0,0.60);
+        } 
+        body {
+            background-image: url("{{ url_for('static', filename='brawl.png') }}");
+            background-size: cover;
+            color: #ecf0f1;
+            font-family: Poppins;
+            padding-bottom: 50px;
+        }
+
+        h1 {
+            color: #fff;
+            text-align: center;
+            margin-top: 20px;
+            font-size: 3rem;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+
+        .form-container {
+            text-align: center;
+            margin-top: 30px;
+            margin-bottom: 50px;
+        }
+
+        .form-container input[type="submit"] {
+            padding: 10px 20px;
+            background-color: #229ee6;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+            -webkit-box-shadow: 17px 13px 12px -4px rgba(0,0,0,0.81);
+            -moz-box-shadow: 17px 13px 12px -4px rgba(0,0,0,0.81);
+            box-shadow: 17px 13px 12px -4px rgba(0,0,0,0.81);
+        }
+
+        .game-item {
+            background: #414a49;
+            border-radius: 10px;
+            margin: 15px 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .game-item span {
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+
+        .game-item .btn {
+            font-size: 0.9rem;
+            padding: 5px 10px;
+            margin-left: 5px;
+            border-radius: 8px;
+        }
+
+        .logout-btn {
+            padding: 10px 20px;
+            background-color: #ffffff;
+            border: none;
+            border-radius: 30px;
+            color: #000000;
+            font-size: 16px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            transition: background-color 0.3s, transform 0.2s;
+            margin-top: 40px;
+            display: block;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+            -webkit-box-shadow: 17px 13px 12px -4px rgba(0,0,0,0.81);
+            -moz-box-shadow: 17px 13px 12px -4px rgba(0,0,0,0.81);
+            box-shadow: 17px 13px 12px -4px rgba(0,0,0,0.81);
+        }
+
+        .logout-btn:hover {
+            background-color: #ff0000;
+            color: #000000;
+            transform: scale(1.05);
+        }
+
+        .logout-btn:focus {
+            outline: none;
+        }
+
+        .logout-btn:active {
+            background-color: #e74c3c;
+        }
+    </style>
+</head>
+<body>
+    <h1>ADICIONE JOGOS</h1>
+
+    <div class="form-container">
+        <form method="POST" action="/">
+            <input type="text" name="title" placeholder="Digite o nome do jogo" required class="form-control mx-auto">
+            <textarea name="description" placeholder="Digite uma breve descrição" required class="form-control mx-auto" rows="4"></textarea>
+            <input type="number" name="rating" placeholder="Nota (0 a 10)" required class="form-control mx-auto" step="0.1" min="0" max="10">
+
+            <input type="submit" value="Adicionar" class="btn btn-primary mt-2">
+        </form>
+    </div>
+
+    <h1>JOGOS CADASTRADOS</h1>
+    <div class="container">
+        {% if books %}
+            {% for book in books %}
+            <div class="game-item">
+                <span>{{ book.title }}</span>
+                <div>
+                    <a href="{{ url_for('jogo', title=book.title) }}" class="btn btn-info btn-sm">Ver Detalhes</a>
+                    <form method="POST" action="./update" style="display: inline;">
+                        <input type="hidden" name="oldtitle" value="{{ book.title }}">
+                        <input type="text" name="newtitle" placeholder="Novo título" class="form-control-sm" required style="width: 150px; display: inline;">
+                        <input type="text" name="newdescription" placeholder="Nova descrição" class="form-control-sm" required style="width: 150px; display: inline;">
+                        <input type="number" name="newrating" placeholder="Nova nota (0 a 10)" class="form-control-sm" required style="width: 100px; display: inline;" step="0.1" min="0" max="10">
+                      
+                        <input type="submit" value="Atualizar" class="btn btn-warning btn-sm">
+                    </form>
+                    <form method="POST" action="./delete" style="display: inline;">
+                        <input type="hidden" name="title" value="{{ book.title }}">
+                        <input type="submit" value="Deletar" class="btn btn-danger btn-sm">
+                    </form>
+                </div>
+            </div>
+            {% endfor %}
+        {% else %}
+            <p class="text-center text-light">Nenhum jogo cadastrado ainda.</p>
+        {% endif %}
+    </div>
+    
+    <div class="form-container">
+        <a href="{{ url_for('forum') }}" class="btn btn-success">Ir para o Fórum</a>
+    </div>
+
+    {% if session.get('user_id') %}
+        <div class="text-center">
+            <a href="{{ url_for('logout') }}" class="logout-btn">Sair</a>
+        </div>
+    {% endif %}
+</body>
+</html>

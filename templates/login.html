@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body{
+            background-image: url("{{ url_for('static', filename='rengar.png') }}");
+            background-size: cover;
+            font-family: Poppins;
+            font-weight: bold;
+            font-size: larger;
+        }
+
+        label, p{
+        color: rgb(255, 255, 255);
+        }
+        
+        h2{
+        font-size:xx-large;
+        color:rgb(255, 255, 255);
+        font-weight: bold;
+        }
+
+        
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2 class="text-center mt-5">Login</h2>
+        
+        <!-- Exibe mensagens de flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul>
+                {% for category, message in messages %}
+                    <li class="alert alert-{{ category }}">{{ message }}</li>
+                {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+        
+        <form method="POST" action="/login">
+            <div class="form-group">
+                <label for="username">Nome de usuário:</label>
+                <input type="text" id="username" name="username" class="form-control" required>
+            </div>
+            <div class="form-group">
+                <label for="password">Senha:</label>
+                <input type="password" id="password" name="password" class="form-control" required>
+            </div>
+            <input type="submit" value="Entrar" class="btn btn-primary mt-3">
+        </form>
+        <p class="mt-3 text-center">Ainda não tem uma conta? <a href="/register">Cadastre-se</a></p>
+    </div>
+</body>
+</html>

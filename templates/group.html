@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ group.name }}</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container">
+        <h1 class="text-center mt-5">{{ group.name }}</h1>
+        <p class="text-center">{{ group.description }}</p>
+
+        <!-- Exibe mensagens de flash -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                <ul>
+                    {% for category, message in messages %}
+                        <li class="alert alert-{{ category }}">{{ message }}</li>
+                    {% endfor %}
+                </ul>
+            {% endif %}
+        {% endwith %}
+
+        <!-- Lista as mensagens do grupo -->
+        <div class="list-group">
+            {% for message in messages %}
+                <div class="list-group-item">
+                    <strong>{{ message.user.username }}:</strong>
+                    <p>{{ message.content }}</p>
+                    <small>{{ message.created_at }}</small>
+                </div>
+            {% else %}
+                <p class="text-center">Nenhuma mensagem ainda.</p>
+            {% endfor %}
+        </div>
+
+        <!-- Formulário para enviar mensagem -->
+        <form method="POST" class="mt-4">
+            <div class="form-group">
+                <textarea name="content" class="form-control" rows="4" placeholder="Digite sua mensagem..." required></textarea>
+            </div>
+            <input type="submit" value="Enviar" class="btn btn-primary">
+        </form>
+
+        <!-- Botão para voltar ao fórum -->
+        <div class="mt-4 text-center">
+            <a href="{{ url_for('forum') }}" class="btn btn-secondary">Voltar ao Fórum</a>
+        </div>
+    </div>
+</body>
+</html>

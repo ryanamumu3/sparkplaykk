@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Detalhes do Jogo</title>
+    <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-image: url("{{ url_for('static', filename='gtasa.png') }}");
+            background-size: cover;
+            background-color: #fcfcfc;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+        .card {
+            margin: 20px auto;
+            font-family: Noto Sans Japanese;
+            font-size: large;
+            max-width: 600px;
+            box-shadow: 17px 13px 12px -4px rgba(0,0,0,0.81);
+        }
+
+        .back-button {
+            margin-top: 20px;
+        }
+
+        .card-title {
+            color: gray;
+        }
+
+        .card-text {
+            color: #34495e;
+        }
+
+        h1 {
+            font-size: 7vh;
+            font-family: Poppins;
+        }
+
+        .comment-box {
+            margin-top: 20px;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .comment {
+            margin-bottom: 10px;
+        }
+
+        .comment-author {
+            font-weight: bold;
+        }
+
+        .comment-text {
+            color: #34495e;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Detalhes do Jogo</h1>
+    </div>
+    <div class="container">
+        <div class="card">
+            <div class="card-body text-center">
+                <h2 class="card-title">{{ book.title }}</h2>
+                <p class="card-text">Descrição: {{ book.description }}</p>
+                <p class="card-text">Nota: {{ book.rating }} ★</p>
+                <p class="card-text">Adicionado por: {{ book.user.username }}</p> <!-- Exibe quem adicionou -->
+                <a href="/" class="btn btn-secondary back-button">Voltar</a>
+            </div>
+        </div>
+
+        {% if session.get('user_id') %}
+            <div class="comment-box">
+                <form method="POST">
+                    <textarea name="content" class="form-control" rows="4" placeholder="Deixe seu comentário..."></textarea>
+                    <button type="submit" class="btn btn-primary mt-3">Comentar</button>
+                </form>
+            </div>
+        {% endif %}
+
+        <div class="comments mt-4">
+            <h4>Comentários:</h4>
+            {% for comment in comments %}
+                <div class="comment">
+                    <p class="comment-author">{{ comment.user.username }}</p>
+                    <p class="comment-text">{{ comment.content }}</p>
+                    <small>{{ comment.created_at.strftime('%d/%m/%Y %H:%M') }}</small>
+                    {% if session.get('user_id') == comment.user_id %}
+                        <form action="{{ url_for('delete_comment', comment_id=comment.id) }}" method="POST">
+                            <button type="submit" class="btn btn-danger btn-sm mt-1">Excluir</button>
+                        </form>
+                    {% endif %}
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
