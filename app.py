@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, redirect, session, flash
+from flask import Flask, render_template, request, redirect, session, flash, url_for
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
@@ -120,11 +120,17 @@ def home():
         rating = request.form.get("rating")
         category_id = request.form.get("category")
 
+        existing_book = Book.query.filter_by(title=title).first()
+        if existing_book:
+            flash("Já existe um jogo com este título.", "danger")
+            return redirect("/")
+
         try:
             book = Book(title=title, description=description, rating=float(rating), user_id=session["user_id"], category_id=category_id)
             db.session.add(book)
             db.session.commit()
             flash("Livro adicionado com sucesso!", "success")
+            return redirect(url_for('jogo', title=book.title))
         except Exception as e:
             flash("Falha ao adicionar livro", "danger")
             print("Falha ao adicionar livro:", e)
@@ -133,8 +139,30 @@ def home():
     books = Book.query.all()
     return render_template("index.html", books=books, categories=categories)
 
-# Fórum - Tópicos e Comentários
+@app.route("/jogo/<string:title>", methods=["GET", "POST"])
+def jogo(title):
+    book = Book.query.filter_by(title=title).first_or_404()
+    comments = Comment.query.filter_by(book_title=title).all()
 
+    if request.method == "POST":
+        if "user_id" not in session:
+            flash("Você precisa estar logado para comentar.", "warning")
+            return redirect("/login")
+
+        content = request.form.get("content")
+        user_id = session["user_id"]
+
+        new_comment = Comment(content=content, user_id=user_id, book_title=title)
+        db.session.add(new_comment)
+        db.session.commit()
+
+        flash("Comentário adicionado com sucesso!", "success")
+        return redirect(f"/jogo/{title}")  # Redireciona de volta para a página do jogo
+
+    return render_template("jogo.html", book=book, comments=comments)
+
+
+# Outras rotas permanecem iguais.
 @app.route("/forum")
 def forum():
     if "user_id" not in session:
@@ -275,6 +303,68 @@ def logout():
     session.clear()
     flash("Você saiu com sucesso!", "success")
     return redirect("/login")
+
+@app.route("/delete_comment/<int:comment_id>", methods=["POST"])
+def delete_comment(comment_id):
+    if "user_id" not in session:
+        flash("Você precisa estar logado para excluir um comentário.", "warning")
+        return redirect("/login")
+
+    comment = Comment.query.get_or_404(comment_id)
+    
+    # Verifica se o comentário pertence ao usuário logado
+    if comment.user_id != session["user_id"]:
+        flash("Você não tem permissão para excluir este comentário.", "danger")
+        return redirect(f"/jogo/{comment.book_title}")
+
+    try:
+        db.session.delete(comment)
+        db.session.commit()
+        flash("Comentário excluído com sucesso!", "success")
+    except Exception as e:
+        flash("Erro ao excluir o comentário. Tente novamente.", "danger")
+
+    return redirect(f"/jogo/{comment.book_title}")
+
+@app.route("/update", methods=["POST"])
+def update_book():
+    if "user_id" not in session:
+        flash("Você precisa estar logado para atualizar o jogo.", "warning")
+        return redirect("/login")
+
+    oldtitle = request.form.get("oldtitle")
+    newtitle = request.form.get("newtitle")
+    newdescription = request.form.get("newdescription")
+    newrating = request.form.get("newrating")
+
+    book = Book.query.filter_by(title=oldtitle).first()
+    if book:
+        book.title = newtitle
+        book.description = newdescription
+        book.rating = float(newrating)
+        db.session.commit()
+        flash("Jogo atualizado com sucesso!", "success")
+        return redirect(url_for('jogo', title=newtitle))
+    else:
+        flash("Jogo não encontrado.", "danger")
+        return redirect("/")
+
+@app.route("/delete", methods=["POST"])
+def delete_book():
+    if "user_id" not in session:
+        flash("Você precisa estar logado para excluir o jogo.", "warning")
+        return redirect("/login")
+
+    title = request.form.get("title")
+    book = Book.query.filter_by(title=title).first()
+    if book:
+        db.session.delete(book)
+        db.session.commit()
+        flash("Jogo excluído com sucesso!", "success")
+        return redirect("/")
+    else:
+        flash("Jogo não encontrado.", "danger")
+        return redirect("/")
 
 if __name__ == "__main__":
     app.run(host='0.0.0.0', debug=True)
